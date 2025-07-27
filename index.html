@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>训练与能量追踪</title>
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#111111" />
+  <link rel="manifest" href="manifest.webmanifest" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="today-line">
+      <span id="todayDate">—</span>
+      <span id="daySuggestion" class="pill"></span>
+    </div>
+    <div class="header-actions">
+      <button id="themeToggle" class="icon-btn" aria-label="切换主题">🌓</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="dashboard" role="tab">仪表盘</button>
+    <button class="tab" data-tab="training" role="tab">训练</button>
+    <button class="tab" data-tab="wellness" role="tab">每日追踪</button>
+    <button class="tab" data-tab="nutrition" role="tab">营养</button>
+    <button class="tab" data-tab="review" role="tab">周评估</button>
+    <button class="tab" data-tab="settings" role="tab">设置</button>
+  </nav>
+
+  <main>
+    <!-- 仪表盘 -->
+    <section id="dashboard" class="tab-panel active" role="tabpanel">
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-title">蛋白 (g)</div>
+          <div class="card-value" id="dashProtein">0</div>
+          <div class="card-sub" id="dashProteinGoal">目标 —</div>
+        </div>
+        <div class="card">
+          <div class="card-title">热量 (kcal)</div>
+          <div class="card-value" id="dashCalories">0</div>
+        </div>
+        <div class="card">
+          <div class="card-title">咖啡因 (mg)</div>
+          <div class="card-value" id="dashCaffeine">0</div>
+        </div>
+        <div class="card">
+          <div class="card-title">睡眠 (h)</div>
+          <div class="card-value" id="dashSleep">—</div>
+        </div>
+        <div class="card">
+          <div class="card-title">日晒 / 活动 (min)</div>
+          <div class="card-value" id="dashSunAct">—</div>
+        </div>
+      </div>
+
+      <canvas id="miniChart" height="120" aria-label="最近7天趋势"></canvas>
+
+      <h3>快速添加</h3>
+      <div class="quick-grid">
+        <button class="btn" data-quick="breakfast">早餐模板</button>
+        <button class="btn" data-quick="pre">训练前</button>
+        <button class="btn" data-quick="post">训练后</button>
+        <button class="btn" data-quick="dinner">晚餐模板</button>
+      </div>
+    </section>
+
+    <!-- 训练记录 -->
+    <section id="training" class="tab-panel" role="tabpanel">
+      <form id="trainingForm" class="section">
+        <label>日期
+          <input type="date" id="trainDate" required />
+        </label>
+        <label>Day 类型
+          <select id="dayType">
+            <option value="A">Day A</option>
+            <option value="B">Day B</option>
+            <option value="C">Day C</option>
+          </select>
+        </label>
+        <div class="row">
+          <label class="grow">时长 (min)
+            <input type="number" id="durationMin" inputmode="numeric" min="0" step="1" />
+          </label>
+          <div class="metrics">
+            <span>总组数：<b id="totalSets">0</b></span>
+            <span>训练量：<b id="totalVolume">0</b></span>
+          </div>
+        </div>
+
+        <div id="exerciseList" class="exercise-list"></div>
+
+        <div class="row gap">
+          <button type="button" class="btn-outline" id="addExerciseBtn">+ 加动作</button>
+          <button type="button" class="btn-outline" id="addSetBtn">+ 选中动作加组</button>
+        </div>
+
+        <label>备注
+          <textarea id="sessionNotes" rows="2" placeholder="例如：肩中束很酸，下一次维持重量"></textarea>
+        </label>
+
+        <button class="btn-primary sticky" type="submit">保存训练</button>
+      </form>
+    </section>
+
+    <!-- 每日追踪 -->
+    <section id="wellness" class="tab-panel" role="tabpanel">
+      <form id="wellnessForm" class="section">
+        <label>日期
+          <input type="date" id="dailyDate" required />
+        </label>
+        <label>起床时间
+          <input type="time" id="wakeTime" />
+        </label>
+        <label>睡眠时长 (h)
+          <input type="number" id="sleepHours" min="0" step="0.1" inputmode="decimal" />
+        </label>
+        <label>睡眠质量 (1–5)
+          <input type="number" id="sleepQuality" min="1" max="5" step="1" />
+        </label>
+        <label>上午精神 (1–5)
+          <input type="number" id="energyAM" min="1" max="5" step="1" />
+        </label>
+        <label>下午精神 (1–5)
+          <input type="number" id="energyPM" min="1" max="5" step="1" />
+        </label>
+        <label>午睡
+          <select id="nap">
+            <option value="none">无</option>
+            <option value="le30">≤30min</option>
+            <option value="gt30">&gt;30min</option>
+          </select>
+        </label>
+        <label>早餐是否吃
+          <select id="breakfast">
+            <option value="true">是</option>
+            <option value="false">否</option>
+          </select>
+        </label>
+        <label>餐餐有蛋白
+          <select id="proteinEachMeal">
+            <option value="true">是</option>
+            <option value="false">否</option>
+          </select>
+        </label>
+        <label>日晒 (min)
+          <input type="number" id="sunlightMin" min="0" step="1" />
+        </label>
+        <label>活动 (min)
+          <input type="number" id="activityMin" min="0" step="1" />
+        </label>
+        <label>嗜睡指数 (0–3)
+          <input type="number" id="sleepiness" min="0" max="3" step="1" />
+        </label>
+        <label>情绪 (1–5)
+          <input type="number" id="mood" min="1" max="5" step="1" />
+        </label>
+        <label>蛋白总量 (g)
+          <input type="number" id="proteinTotal" min="0" step="0.1" />
+        </label>
+        <label>热量 (kcal)
+          <input type="number" id="caloriesTotal" min="0" step="1" />
+        </label>
+        <label>咖啡因 (mg)
+          <input type="number" id="caffeineMg" min="0" step="1" />
+        </label>
+        <label>备注
+          <textarea id="dailyNotes" rows="2"></textarea>
+        </label>
+        <button class="btn-primary sticky" type="submit">保存当日</button>
+      </form>
+    </section>
+
+    <!-- 营养 -->
+    <section id="nutrition" class="tab-panel" role="tabpanel">
+      <form id="foodForm" class="section">
+        <label>时间标签
+          <select id="timeTag">
+            <option value="早餐">早餐</option>
+            <option value="午餐">午餐</option>
+            <option value="加餐">加餐</option>
+            <option value="训练前">训练前</option>
+            <option value="训练后">训练后</option>
+            <option value="晚餐">晚餐</option>
+            <option value="睡前">睡前</option>
+          </select>
+        </label>
+        <label>食物模板
+          <select id="foodSelect"></select>
+        </label>
+        <label>份数 (可小数)
+          <input type="number" id="servings" min="0.1" step="0.1" value="1" />
+        </label>
+        <button class="btn-primary" type="submit">添加到今天</button>
+      </form>
+
+      <div class="section">
+        <h3>今日食物</h3>
+        <ul id="todayFoodList" class="food-list"></ul>
+        <div class="totals">
+          <span>P <b id="todayP">0</b> g</span>
+          <span>C <b id="todayC">0</b> g</span>
+          <span>F <b id="todayF">0</b> g</span>
+          <span>kcal <b id="todayK">0</b></span>
+          <span>咖啡因 <b id="todayCafe">0</b> mg</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 周评估 -->
+    <section id="review" class="tab-panel" role="tabpanel">
+      <div class="section">
+        <label>选择周 (ISO 周)
+          <input type="week" id="weekPicker" />
+        </label>
+        <div id="weekSummary" class="cards-grid"></div>
+        <div id="progressHints" class="list"></div>
+      </div>
+    </section>
+
+    <!-- 设置与备份 -->
+    <section id="settings" class="tab-panel" role="tabpanel">
+      <form id="settingsForm" class="section">
+        <h3>目标</h3>
+        <label>体重 (kg)
+          <input type="number" id="bodyWeight" min="0" step="0.1" />
+        </label>
+        <label>日蛋白目标 (g)
+          <input type="number" id="dailyProtein" min="0" step="1" />
+        </label>
+        <label>日热量目标 (kcal)
+          <input type="number" id="dailyCalories" min="0" step="1" />
+        </label>
+        <label>咖啡因截止小时 (0–23)
+          <input type="number" id="caffeineCutoffHour" min="0" max="23" step="1" />
+        </label>
+        <button class="btn-primary" type="submit">保存目标</button>
+      </form>
+
+      <div class="section">
+        <h3>数据</h3>
+        <div class="row gap wrap">
+          <button id="exportJson" class="btn">导出 JSON</button>
+          <button id="importJson" class="btn">导入 JSON</button>
+          <input type="file" id="jsonFile" accept="application/json" hidden />
+          <button id="exportDailyCsv" class="btn-outline">导出每日 CSV</button>
+          <button id="exportTrainCsv" class="btn-outline">导出训练 CSV</button>
+          <button id="clearData" class="btn-danger">清空数据</button>
+        </div>
+      </div>
+
+      <div class="section small">
+        <label><input type="checkbox" id="enablePWA" /> 启用离线缓存 (PWA)</label>
+        <p class="muted">勾选后将注册 Service Worker 并缓存本站三文件，便于离线使用。</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

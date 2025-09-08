@@ -1,0 +1,6 @@
+name = "fittrack-sync"
+main = "worker.js"
+compatibility_date = "2025-09-08"
+type = "javascript"
+
+account_id = "6d2cab55fb773d418b5f08e7872802fc"
